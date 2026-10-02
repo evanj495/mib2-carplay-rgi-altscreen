@@ -25,3 +25,13 @@ install_MoreIncredibleBash/mod/carplay/*
 !install_MoreIncredibleBash/mod/carplay/.gitkeep
 /install_MoreIncredibleBash/mod/last-carplay-*.log
 /uninstall_MoreIncredibleBash/mod/last-carplay-*.log
+
+# Vehicle-specific / proprietary stock inputs
+/MU*-base.jar
+/*-lsd.jxe
+/*.ifs
+/RCC_fs0.bin
+/backup.zip
+/eeprom*.bin
+/local_stock/
+/stock_inputs/

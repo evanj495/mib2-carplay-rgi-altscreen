@@ -7,6 +7,13 @@ Integrates **[MHI2Q-CarPlay-AltScreen](https://github.com/yuedizhibo/MHI2Q-CarPl
 
 **Tested & verified on:** Audi Q5 (FY) 2019 · `MHI2Q_ER_AUG22_P5092` · MU Software `1329`.
 
+**MU1320 / NAR vehicle-tested port:** Audi Q5 (FY) MY2018 ·
+`MHI2Q_US_AUG22_P4246` · MU Software `1320` · Virtual Cockpit `AU491`.
+See [`docs/ports/MU1320-P4246-NAR.md`](docs/ports/MU1320-P4246-NAR.md).
+
+**Licensing:** this repository contains components under different upstream
+license terms. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
 **Disclaimer:** Use at your own risk. These patches modify firmware binaries and system configurations on your infotainment unit. Always back up all original files before making any changes. The authors are not responsible for any damage, bricked devices, or warranty issues resulting from use of these patches.
 
 ## 🖼️ Gallery
@@ -229,12 +236,13 @@ threading, boot and the complete test list live in the knowledge base - see
 ## 🚀 Deployment
 
 **Compatibility & Tested Hardware:**
-- **Confirmed & verified working on:**
-  - **Vehicle:** Audi Q5 (FY) 2019
-  - **Firmware Release:** `MHI2Q_ER_AUG22_P5092`
-  - **MU Software:** `1329`
-- **Supported units:** Any Audi MHI2Q infotainment unit (developed and tested on MU1316 and MU1329).
-  What matters is:
+- **Confirmed / vehicle-tested configurations:**
+  - Audi Q5 (FY) 2019 · `MHI2Q_ER_AUG22_P5092` · MU `1329`
+  - Audi Q5 (FY) MY2018 NAR · `MHI2Q_US_AUG22_P4246` · MU `1320`
+    ([MU1320/P4246 port notes](docs/ports/MU1320-P4246-NAR.md))
+- **Other MHI2Q firmware trains may require firmware-specific Java/HMI adaptation.**
+  Do not assume compatibility from the MHI2Q designation alone.
+  Requirements include:
   - A fully digital instrument cluster (**Audi Virtual Cockpit**); analog clusters are not supported.
   - Preferably the latest firmware available for the unit, flashed before installing.
 
