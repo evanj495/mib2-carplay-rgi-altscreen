@@ -48,13 +48,13 @@ skipFileCopyCrc = "true"
 skipCheckVariant = "true"
 skipCheckRegion = "true"
 FinalScript = "./Toolbox/final/finalScript.sh"
-FinalScriptChecksum = "5478e2177180c1654b2fbe2ea307078eb1ea0a26"
+FinalScriptChecksum = "68ec491e577162a2205e323952066086a1318461"
 FinalScriptMaxTime = "30"
 FinalScriptName = "Final Script"
 
 [Toolbox\final\Dir]
-FileSize = "2622"
-CheckSum = "3B2D9B5727A292C923922293FF7C3EC88D7C3681"
+FileSize = "5096"
+CheckSum = "D7118889CE21DEA806C3F64438A1DA5CAB6E4A41"
 
 [Toolbox]
 VendorInfo = "MQB.Coding"

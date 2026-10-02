@@ -1,12 +1,12 @@
 FileName = "cleanup.sh"
-FileSize = "678"
-CheckSum = "5ae4561eeedd311de7ed6034f5066b0803956a40"
+FileSize = "744"
+CheckSum = "729938b9743cdf85be9eb097df99d89d26d3099a"
 
 FileName = "finalScript.sh"
-FileSize = "1063"
-CheckSum = "5478e2177180c1654b2fbe2ea307078eb1ea0a26"
+FileSize = "3248"
+CheckSum = "68ec491e577162a2205e323952066086a1318461"
 
 FileName = "install_scripts.sh"
-FileSize = "568"
-CheckSum = "9e0c40e7bc21f1706e3de73f83517c674ea7a47c"
+FileSize = "791"
+CheckSum = "43d1d1306fad1e3537035d6d620eb2bbf3851d57"
 

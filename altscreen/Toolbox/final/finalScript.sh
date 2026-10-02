@@ -1,54 +1,128 @@
 #!/bin/ksh
 
-echo "FinalScript for HW ${1} on medium ${2}..."
-VOLUME="${2:-}"
-if [ -n "$VOLUME" ]; then
-    [ -f "$VOLUME/Toolbox/final/install_scripts.sh" ] || {
-        echo "FAIL: supplied SD medium has no Toolbox installer: $VOLUME" >&2
-        exit 1
-    }
-else
-    for candidate in /net/mmx/fs/sda0 /net/mmx/fs/sda1 /net/mmx/fs/sdb0 /net/mmx/fs/sdb1 /fs/sda0 /fs/sda1 /fs/sdb0 /fs/sdb1; do
-        if [ -f "$candidate/Toolbox/final/install_scripts.sh" ] &&
-           [ -f "$candidate/Toolbox/GEM/mqb-carplayAltScreen.esd" ]; then
-            VOLUME=$candidate
-            break
-        fi
-    done
-fi
-[ -n "$VOLUME" ] || { echo "FAIL: matching Toolbox SD card not found" >&2; exit 1; }
+echo "MU1320 Toolbox SWDL bootstrap v2"
+echo "HW=${1:-unknown}"
+echo "SWDL_MEDIUM_ARG=${2:-<empty>}"
 
-# The SWDL medium may be mounted read-only. Logging falls back to one flat
-# volatile file; reading the package and installing the Toolbox can continue.
-on -f mmx /bin/mount -uw "$VOLUME" >/dev/null 2>&1 || true
-PROBE="$VOLUME/.mmi-swdl-write-probe.$$"
-TOKEN="mmi-swdl-$$"
-LOGFILE=/tmp/MMI-Cockpit-Carplay.install_final.log
-if ( umask 077; printf '%s\n' "$TOKEN" > "$PROBE" ) 2>/dev/null &&
-   [ "$(cat "$PROBE" 2>/dev/null)" = "$TOKEN" ]; then
-    rm -f "$PROBE" 2>/dev/null || true
-    [ -d "$VOLUME/Log" ] || mkdir -p "$VOLUME/Log"
-    if [ -d "$VOLUME/Log" ]; then
-        LOGFILE="$VOLUME/Log/install_final.txt"
+MMX_VOLUME=""
+
+echo "STAGE=MMX_SD_DISCOVERY"
+
+for candidate in /fs/sda0 /fs/sda1 /fs/sdb0 /fs/sdb1
+do
+    on -f mmx /bin/ksh -c \
+        "[ -f '$candidate/Toolbox/scripts/update_toolbox.sh' ] &&
+         [ -f '$candidate/Toolbox/scripts/install_mmi_cockpit_carplay_rx.sh' ] &&
+         [ -f '$candidate/Toolbox/GEM/mqb-carplayAltScreen.esd' ]" \
+         >/dev/null 2>&1
+
+    if [ "$?" -eq 0 ]; then
+        MMX_VOLUME="$candidate"
+        break
     fi
-else
-    rm -f "$PROBE" 2>/dev/null || true
-    echo "SD_LOG=VOLATILE_ONLY volume=$VOLUME"
+done
+
+if [ -z "$MMX_VOLUME" ]; then
+    echo "FAIL_STAGE=MMX_SD_DISCOVERY"
+    echo "FAIL: AltScreen Toolbox SD not visible from MMX"
+    exit 21
 fi
 
-/bin/ksh "$VOLUME/Toolbox/final/install_scripts.sh" "$VOLUME" > "$LOGFILE" 2>&1
+echo "MMX_VOLUME=$MMX_VOLUME"
+echo "STAGE=INSTALL_TOOLBOX_FILES"
+
+on -f mmx /bin/ksh -c '
+VOLUME="$1"
+TARGET=/mnt/app/eso/hmi/engdefs
+SCRIPTS="$TARGET/scripts/mqb"
+
+fail()
+{
+    code="$1"
+    stage="$2"
+    echo "FAIL_STAGE=$stage"
+    mount -ur /mnt/app >/dev/null 2>&1 || true
+    exit "$code"
+}
+
+echo "MMX_STAGE=MOUNT_APP_RW"
+mount -uw /mnt/app || fail 22 MOUNT_APP_RW
+
+echo "MMX_STAGE=CREATE_SCRIPT_DIR"
+mkdir -p "$SCRIPTS" || fail 23 CREATE_SCRIPT_DIR
+
+echo "MMX_STAGE=COPY_SCRIPTS"
+cp "$VOLUME"/Toolbox/scripts/*.sh "$SCRIPTS"/ ||
+    fail 24 COPY_SCRIPTS
+
+echo "MMX_STAGE=CHMOD_SCRIPTS"
+chmod 755 "$SCRIPTS" "$SCRIPTS"/*.sh ||
+    fail 25 CHMOD_SCRIPTS
+
+echo "MMX_STAGE=COPY_GEM"
+cp "$VOLUME"/Toolbox/GEM/*.esd "$TARGET"/ ||
+    fail 26 COPY_GEM
+
+echo "MMX_STAGE=VERIFY"
+
+[ -s "$SCRIPTS/update_toolbox.sh" ] ||
+    fail 27 VERIFY_UPDATE_TOOLBOX
+
+[ -s "$SCRIPTS/install_mmi_cockpit_carplay_rx.sh" ] ||
+    fail 28 VERIFY_CARPLAY_INSTALLER
+
+[ -s "$TARGET/mqb-carplayAltScreen.esd" ] ||
+    fail 29 VERIFY_CARPLAY_MENU
+
+echo "SCRIPT_INSTALL=PASS"
+echo "CARPLAY_MENU_INSTALL=PASS"
+
+# Preserve the upstream Toolbox cleanup for installations that may still
+# contain pre-v4.1 GEM definitions or PhoneCustomer scripts.
+echo "MMX_STAGE=CLEAN_LEGACY_TOOLBOX"
+rm -rf "$TARGET"/mqbcoding.esd* ||
+    fail 30 CLEAN_LEGACY_GEM
+rm -f /mnt/app/eso/bin/PhoneCustomer/*.sh ||
+    fail 30 CLEAN_LEGACY_PHONECUSTOMER
+rm -f /mnt/app/eso/bin/PhoneCustomer/default/*.sh ||
+    fail 30 CLEAN_LEGACY_PHONECUSTOMER_DEFAULT
+rm -rf /mnt/app/eso/bin/PhoneCustomer/default/scripts ||
+    fail 30 CLEAN_LEGACY_PHONECUSTOMER_SCRIPTS
+
+echo "MMX_STAGE=MOUNT_APP_RO"
+mount -ur /mnt/app || exit 30
+
+exit 0
+' toolbox_install "$MMX_VOLUME"
+
 RC=$?
-if [ "$RC" -eq 0 ]; then
-    /bin/ksh "$VOLUME/Toolbox/final/cleanup.sh" >> "$LOGFILE" 2>&1
-    RC=$?
+
+if [ "$RC" -ne 0 ]; then
+    echo "FAIL_STAGE=MMX_INSTALL"
+    echo "MMX_INSTALL_RC=$RC"
+    exit "$RC"
 fi
-if [ "$RC" -eq 0 ]; then
-    export LD_LIBRARY_PATH=/mnt/app/root/lib-target:/eso/lib:/mnt/app/usr/lib:/mnt/app/armle/lib:/mnt/app/armle/lib/dll:/mnt/app/armle/usr/lib
-    export IPL_CONFIG_DIR=/etc/eso/production
-    on -f mmx /net/mmx/mnt/app/eso/bin/apps/pc b:0:0xC002000D 1 >> "$LOGFILE" 2>&1
-    RC=$?
-fi
-on -f mmx /bin/mount -ur "$VOLUME" >/dev/null 2>&1 || true
-[ "$RC" -eq 0 ] || { echo "FAIL: Toolbox SWDL install; see $LOGFILE" >&2; exit "$RC"; }
-touch /tmp/SWDLScript.Result || exit 1
-echo "Done. log=$LOGFILE"
+
+echo "MMX_INSTALL=PASS"
+
+# Match upstream Toolbox behavior: request developer mode after the
+# installation has already been verified. A non-zero pc return code is
+# therefore diagnostic and must not turn an otherwise valid SWDL into
+# a fatal installation error.
+export LD_LIBRARY_PATH=/mnt/app/root/lib-target:/eso/lib:/mnt/app/usr/lib:/mnt/app/armle/lib:/mnt/app/armle/lib/dll:/mnt/app/armle/usr/lib
+export IPL_CONFIG_DIR=/etc/eso/production
+
+on -f mmx /mnt/app/eso/bin/apps/pc b:0:0xC002000D 1 \
+    >/dev/null 2>&1
+PC_RC=$?
+
+echo "DEVELOPER_MODE_PC_RC=$PC_RC"
+
+touch /tmp/SWDLScript.Result || {
+    echo "FAIL_STAGE=RESULT_MARKER"
+    exit 31
+}
+
+echo "TOOLBOX_SWDL_INSTALL=PASS"
+echo "Done."
+exit 0
