@@ -82,6 +82,8 @@ chmod 755 "$OUT/$RGI_DIR"/*.sh "$OUT/$RGI_DIR/maneuver_render" "$OUT/$RGI_DIR/li
 
 # The one HMI JAR (RGI Java + the AltScreen ctx-81 video context). AltScreen's INSTALL,
 # START and STATUS refuse any JAR whose POSIX cksum/size differ from the pinned pair.
+# A clean checkout does not contain the generated hmi/ directory, so create it here.
+mkdir -p "$(dirname "$OUT/$JAR_DEST")"
 cp "$JAR" "$OUT/$JAR_DEST"
 set -- $(cksum < "$JAR")
 JAR_CKSUM=$1 JAR_SIZE=$2
