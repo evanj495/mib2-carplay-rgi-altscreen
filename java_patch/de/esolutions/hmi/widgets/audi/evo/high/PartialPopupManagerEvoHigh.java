@@ -11,7 +11,7 @@ import de.audi.tghu.hmi.evo.IDrawerFocusManagerEvo;
 import de.audi.tghu.hmi.evo.IPartialPopupControllerEvo;
 import de.audi.tghu.hmi.evo.IPopupManagerEvo;
 import de.esolutions.fw.util.commons.Buffer;
-import de.esolutions.hmi.widgets.audi.base.AbstractPartialPopupManager;
+import de.esolutions.hmi.widgets.audi.base.PartialPopupManager;
 import de.esolutions.hmi.widgets.audi.base.AbstractScreenWidget;
 import de.esolutions.hmi.widgets.audi.base.HMITerminalImpl;
 import de.esolutions.hmi.widgets.audi.base.ScreenMainArea;
@@ -23,7 +23,7 @@ import de.esolutions.hmi.widgets.audi.evo.widgets.PartialPopupActivatorControlle
 import java.util.List;
 import org.osgi.framework.BundleContext;
 
-public class PartialPopupManagerEvoHigh extends AbstractPartialPopupManager implements DrawerAnimationListener {
+public class PartialPopupManagerEvoHigh extends PartialPopupManager implements DrawerAnimationListener {
     private static final float FIXED_PP_DRAWER_OPACITY = 0.75F;
     private static final int PP_SKIN_CHANGE = 95;
     protected IPopupManagerEvo popupManagerEvo;

@@ -9,14 +9,12 @@ import de.audi.app.terminalmode.device.TMDevice;
 import de.audi.app.terminalmode.diagnosis.IDiagnosisCommandProvider;
 import de.audi.app.terminalmode.diagnosis.IDiagnosisManager;
 import de.audi.app.terminalmode.osgi.IServiceManager;
-import de.audi.app.terminalmode.smartphone.IDSISmartphoneManager;
 import de.audi.app.terminalmode.statemachine.IRequestor;
 import de.audi.app.terminalmode.statemachine.IStateHandler;
 import de.audi.app.terminalmode.statemachine.Resource;
 import de.audi.app.terminalmode.statemachine.TMState;
 import de.audi.app.terminalmode.statemachine.commands.AbstractCommand;
 import de.audi.atip.hmi.modelaccess.ChoiceModelApp;
-import de.audi.atip.interapp.bap.ecall.data.EmergencyNumber;
 import de.audi.atip.interapp.bap.ecall.data.PhoneCall;
 import de.audi.atip.interapp.phone.IEcallState;
 import de.audi.atip.interapp.phone.ITelEcallStateListener;
@@ -31,7 +29,7 @@ import de.audi.atip.utils.reactive.properties.PropertyFactory;
 import de.audi.tghu.command.CommandList;
 import de.esolutions.fw.util.commons.Buffer;
 
-/** Stock MU1316 resource policy, with one standalone-OPS exception for CarPlay. */
+/** Stock MU1320-compatible resource policy, with one standalone-OPS exception for CarPlay. */
 public class HighPriorityResourceTracker
     extends DefaultPowerEventListener
     implements ITerminalModeComponent,
@@ -47,7 +45,6 @@ public class HighPriorityResourceTracker
     private final IDiagnosisManager diagnosisManager;
     private final IDiagnosisCommandProvider diagnosisCommandProvider;
     private final IStateHandler stateHandler;
-    private final IDSISmartphoneManager.ISmartphoneProperties smartphoneProperties;
     public static final int SCREEN_NOT_BLOCKED = 0;
     public static final int SCREEN_BLOCKED_CARPLAY_BY_ECALL = 1;
     public static final int SCREEN_BLOCKED_ANDROIDAUTO_BY_ECALL = 2;
@@ -63,8 +60,7 @@ public class HighPriorityResourceTracker
         IContext icontext,
         IDiagnosisManager idiagnosismanager,
         IStateHandler istatehandler,
-        PropertyFactory propertyfactory,
-        IDSISmartphoneManager.ISmartphoneProperties idsismartphonemanager$ismartphoneproperties
+        PropertyFactory propertyfactory
     ) {
         this.serviceManager = iservicemanager;
         this.commandListHelper = commandlisthelper;
@@ -72,7 +68,6 @@ public class HighPriorityResourceTracker
         this.context = icontext;
         this.diagnosisManager = idiagnosismanager;
         this.stateHandler = istatehandler;
-        this.smartphoneProperties = idsismartphonemanager$ismartphoneproperties;
         this.eCallActive = propertyfactory.createProperty("eCallActive", new Boolean(false));
         this.clampSOff = propertyfactory.createProperty("clampSOff", new Boolean(false));
         this.rvcActive = propertyfactory.createProperty("rvcActive", new Boolean(false));
@@ -187,7 +182,6 @@ public class HighPriorityResourceTracker
                  * Never toggle Main Wizard or acquire SCREEN for standalone OPS. */
                 if (((Boolean)this.rvcActive.get()).booleanValue()) {
                     this.rvcActive.accept(Boolean.FALSE);
-                    this.smartphoneProperties.getPropertyMURVCActive().accept(Boolean.FALSE);
                     this.context.getChoiceModel(ICoreTerminalModeModelBank.SMARTPHONE_SCREEN_BLOCKED_CHOICE)
                         .setValue(((Boolean)this.eCallActive.get()).booleanValue() ? 1 : 0);
                 }
@@ -201,7 +195,6 @@ public class HighPriorityResourceTracker
              * to new pure OPS. Do not erase the already published target. */
             this.rvcActive.accept(new Boolean(false));
             this.context.getChoiceModel(ICoreTerminalModeModelBank.SMARTPHONE_SCREEN_BLOCKED_CHOICE).setValue(0);
-            this.smartphoneProperties.getPropertyMURVCActive().accept(new Boolean(false));
         }
     }
 
@@ -222,7 +215,6 @@ public class HighPriorityResourceTracker
             this.rvcActive.accept(new Boolean(true));
         }
 
-        this.smartphoneProperties.getPropertyMURVCActive().accept(new Boolean(true));
     }
 
     public void notifyPowerListenerOnEnterState(int i, int j) {
@@ -312,16 +304,5 @@ public class HighPriorityResourceTracker
             return false;
         }
 
-        public boolean isLowPrioritySOSEmergencyCallType() {
-            return false;
-        }
-
-        public EmergencyNumber[] getAllowedEmergencyNumbers() {
-            return new EmergencyNumber[0];
-        }
-
-        public String getEmergencyNumberToBeDialed() {
-            return null;
-        }
     }
 }

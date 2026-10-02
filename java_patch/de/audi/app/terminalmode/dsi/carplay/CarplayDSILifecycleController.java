@@ -371,7 +371,7 @@ public class CarplayDSILifecycleController extends AbstractDSIController impleme
             ResourceRequest[] aresourcerequest = new ResourceRequest[aidsiresource.length];
 
             for (int i = 0; i < aidsiresource.length; i++) {
-                int j = aidsiresource[i].getDSITakeType(flag);
+                int j = aidsiresource[i].getDSITakeType();
                 this.this$0
                     .logger
                     .log(
@@ -386,10 +386,10 @@ public class CarplayDSILifecycleController extends AbstractDSIController impleme
                     .createResourceRequest(
                         aidsiresource[i].getDSIResourceId(),
                         aidsiresource[i].getOwner() == 1 ? j : CarplayUtils.getInvertTransferType(j),
-                        aidsiresource[i].getDSITransferPriority(flag),
-                        aidsiresource[i].getDSITakeConstraint(flag),
-                        aidsiresource[i].getDSIBorrowConstraint(flag),
-                        aidsiresource[i].getDSIUnborrowConstraint(flag)
+                        flag ? 2 : 1,
+                        aidsiresource[i].getDSITakeConstraint(),
+                        aidsiresource[i].getDSIBorrowConstraint(),
+                        flag ? 0 : aidsiresource[i].getDSIUnborrowConstraint()
                     );
             }
 

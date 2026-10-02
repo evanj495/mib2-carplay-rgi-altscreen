@@ -12,7 +12,6 @@ import de.audi.app.terminalmode.commands.NavigationStateChanged;
 import de.audi.app.terminalmode.commands.PhoneStateUpdate;
 import de.audi.app.terminalmode.events.DefaultEventListener;
 import de.audi.app.terminalmode.events.IEventBus;
-import de.audi.app.terminalmode.smartphone.IDSISmartphoneManager;
 import de.audi.app.terminalmode.statemachine.IStateHandler;
 import de.audi.app.terminalmode.statemachine.Resource;
 import de.audi.app.terminalmode.statemachine.commands.AbstractCommand;
@@ -63,7 +62,6 @@ public class ExternalEventsListener
     private boolean initialized;
     private int lifecycleGeneration;
     private HMIService hmiService;
-    private IDSISmartphoneManager.ISmartphoneProperties smartphoneProperties;
 
     private static final class ActionProxyCall {
         final int id;
@@ -80,14 +78,12 @@ public class ExternalEventsListener
     public ExternalEventsListener(
         IContext context,
         IStateHandler stateHandler,
-        IDispatcher dispatcher,
-        IDSISmartphoneManager.ISmartphoneProperties smartphoneProperties
+        IDispatcher dispatcher
     ) {
         this.logger = context.getLogger().main();
         this.context = context;
         this.hmiService = context.getFramework().getHMIService();
         this.stateHandler = stateHandler;
-        this.smartphoneProperties = smartphoneProperties;
         this.eventBus = context.getEventBus();
         this.dispatcher = dispatcher;
         this.lastActionProxyCall = LoggingPropertyFactory.create().createProperty("lastActionProxyCall");
@@ -208,9 +204,6 @@ public class ExternalEventsListener
                             )
                         )
                         .execute("ExternalEventsListener.updateTelState");
-                    ExternalEventsListener.this.smartphoneProperties
-                        .getPropertyMUHFPPhonecallActive()
-                        .accept(new Boolean(telState.getCallActive()));
                 }
             },
             new Hashtable(0)
