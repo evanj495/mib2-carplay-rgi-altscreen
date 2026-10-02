@@ -2,6 +2,19 @@
 
 **English** | [Українська](README_UA.md)
 
+> ### MU1320 / P4246 NAR port
+>
+> **Vehicle-tested configuration:** Audi Q5 (FY) MY2018 · NAR/USA ·
+> `MHI2Q_US_AUG22_P4246` · MU `1320` · Virtual Cockpit `AU491`
+>
+> **Current release:** [v1.0.0-rc2 — validated SD-card overlay](https://github.com/evanj495/mib2-carplay-rgi-altscreen/releases/tag/mu1320-p4246-nar-v1.0.0-rc2)
+>
+> [Installation / compatibility notes](https://github.com/evanj495/mib2-carplay-rgi-altscreen/blob/2296b950921f36cc9ed025347333bfa96e7eaccb/docs/ports/MU1320-P4246-NAR.md)
+>
+> This is an SD-card overlay, not Audi firmware. Make and retain a
+> unit-specific backup before installation. Other MHI2Q firmware trains
+> must not be assumed compatible.
+
 Unified CarPlay patch set for Audi MHI2Q infotainment with Audi Virtual Cockpit.  
 Integrates **[MHI2Q-CarPlay-AltScreen](https://github.com/yuedizhibo/MHI2Q-CarPlay-AltScreen)** (CarPlay instrument cluster video streaming) with **[mib2q-carplay-rgi](https://github.com/luka-dev/mib2q-carplay-rgi)** (3D turn-by-turn route guidance & maneuver renderer) into one single codebase and all-in-one SD card build.
 
